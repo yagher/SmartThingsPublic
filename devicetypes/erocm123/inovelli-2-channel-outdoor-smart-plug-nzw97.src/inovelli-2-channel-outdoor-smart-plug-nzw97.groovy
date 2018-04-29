@@ -1,7 +1,7 @@
- /**
- *  Inovelli 2-Channel Smart Plug NZW37 w/Scene
+/**
+ *  Inovelli 2-Channel Outdoor Smart Plug NZW97
  *  Author: Eric Maycock (erocm123)
- *  Date: 2017-10-17
+ *  Date: 2017-11-14
  *
  *  Copyright 2017 Eric Maycock
  *
@@ -17,7 +17,7 @@
  */
  
 metadata {
-    definition(name: "Inovelli 2-Channel Smart Plug NZW37 w/Scene", namespace: "erocm123", author: "Eric Maycock") {
+    definition(name: "Inovelli 2-Channel Outdoor Smart Plug NZW97", namespace: "erocm123", author: "Eric Maycock") {
         capability "Actuator"
         capability "Sensor"
         capability "Switch"
@@ -28,11 +28,11 @@ metadata {
         
         attribute "lastActivity", "String"
         attribute "lastEvent", "String"
-        
-        command "pressUpX2"
 
-        fingerprint manufacturer: "015D", prod: "2500", model: "2500", deviceJoinName: "Inovelli 2-Channel Smart Plug"
-        fingerprint manufacturer: "0312", prod: "2500", model: "2500", deviceJoinName: "Inovelli 2-Channel Smart Plug"
+        fingerprint manufacturer: "015D", prod: "6100", model: "6100", deviceJoinName: "Inovelli 2-Channel Outdoor Smart Plug"
+        fingerprint manufacturer: "0312", prod: "6100", model: "6100", deviceJoinName: "Inovelli 2-Channel Outdoor Smart Plug"
+        fingerprint manufacturer: "015D", prod: "0221", model: "611C", deviceJoinName: "Inovelli 2-Channel Outdoor Smart Plug"
+        fingerprint manufacturer: "0312", prod: "0221", model: "611C", deviceJoinName: "Inovelli 2-Channel Outdoor Smart Plug"
     }
     
     simulator {}
@@ -41,7 +41,6 @@ metadata {
         input "autoOff1", "number", title: "Auto Off Channel 1\n\nAutomatically turn switch off after this number of seconds\nRange: 0 to 32767", description: "Tap to set", required: false, range: "0..32767"
         input "autoOff2", "number", title: "Auto Off Channel 2\n\nAutomatically turn switch off after this number of seconds\nRange: 0 to 32767", description: "Tap to set", required: false, range: "0..32767"
         input "ledIndicator", "enum", title: "LED Indicator\n\nTurn LED indicator on when switch is:\n", description: "Tap to set", required: false, options:[[0: "On"], [1: "Off"], [2: "Disable"]], defaultValue: 0
-        input description: "1 pushed - Button 2x click", title: "Button Mappings", displayDuringSetup: false, type: "paragraph", element: "paragraph"
     }
     
     tiles {
@@ -60,19 +59,11 @@ metadata {
             state "default", label: "", action: "refresh.refresh", icon: "st.secondary.refresh"
         }
         
-        standardTile("pressUpX2", "device.button", width: 4, height: 1, decoration: "flat") {
-            state "default", label: "Tap ▲▲", backgroundColor: "#ffffff", action: "pressUpX2"
-        }
-        
         valueTile("lastActivity", "device.lastActivity", inactiveLabel: false, decoration: "flat", width: 4, height: 1) {
             state "default", label: 'Last Activity: ${currentValue}',icon: "st.Health & Wellness.health9"
         }
         
-        valueTile("info", "device.info", inactiveLabel: false, decoration: "flat", width: 3, height: 1) {
-            state "default", label: 'Tap on the ▲▲ button above to test your scene'
-        }
-        
-        valueTile("icon", "device.icon", inactiveLabel: false, decoration: "flat", width: 3, height: 1) {
+        valueTile("icon", "device.icon", inactiveLabel: false, decoration: "flat", width: 4, height: 1) {
             state "default", label: '', icon: "https://inovelli.com/wp-content/uploads/Device-Handler/Inovelli-Device-Handler-Logo.png"
         }
     }
@@ -274,15 +265,6 @@ def updated() {
     response(commands(cmds))
 }
 
-def zwaveEvent(physicalgraph.zwave.commands.centralscenev1.CentralSceneNotification cmd) {
-    createEvent(buttonEvent(cmd.sceneNumber, (cmd.sceneNumber == 2? "held" : "pushed"), "physical"))
-}
-
-def buttonEvent(button, value, type = "digital") {
-    sendEvent(name:"lastEvent", value: "${value != 'pushed'?' Tap '.padRight(button+1+5, '▼'):' Tap '.padRight(button+1+5, '▲')}", displayed:false)
-    [name: "button", value: value, data: [buttonNumber: button], descriptionText: "$device.displayName button $button was $value", isStateChange: true, type: type]
-}
-
 def zwaveEvent(physicalgraph.zwave.commands.configurationv2.ConfigurationReport cmd) {
     log.debug "${device.displayName} parameter '${cmd.parameterNumber}' with a byte size of '${cmd.size}' is set to '${cmd.configurationValue}'"
 }
@@ -316,11 +298,7 @@ private void createChildDevices() {
     state.oldLabel = device.label
     for (i in 1..2) {
         addChildDevice("Switch Child Device", "${device.deviceNetworkId}-ep${i}", null, [completedSetup: true, label: "${device.displayName} (CH${i})",
-            isComponent: false, componentName: "ep$i", componentLabel: "Channel $i"
+            isComponent: true, componentName: "ep$i", componentLabel: "Channel $i"
         ])
     }
-}
-
-def pressUpX2() {
-    sendEvent(buttonEvent(1, "pushed"))
 }

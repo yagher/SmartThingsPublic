@@ -1,5 +1,5 @@
- /**
- *  Inovelli Dimmer NZW31/NZW31T w/Scene
+/**
+ *  Inovelli Dimmer NZW31
  *  Author: Eric Maycock (erocm123)
  *  Date: 2018-04-11
  *
@@ -32,43 +32,26 @@
  */
  
 metadata {
-    definition (name: "Inovelli Dimmer NZW31 w/Scene", namespace: "erocm123", author: "Eric Maycock") {
+    definition (name: "Inovelli Dimmer NZW31", namespace: "erocm123", author: "Eric Maycock") {
         capability "Switch"
         capability "Refresh"
         capability "Polling"
         capability "Actuator"
         capability "Sensor"
         capability "Health Check"
-        capability "Button"
-        capability "Holdable Button"
         capability "Switch Level"
         capability "Configuration"
         
         attribute "lastActivity", "String"
         attribute "lastEvent", "String"
         
-        command "pressUpX1"
-        command "pressDownX1"
-        command "pressUpX2"
-        command "pressDownX2"
-        command "pressUpX3"
-        command "pressDownX3"
-        command "pressUpX4"
-        command "pressDownX4"
-        command "pressUpX5"
-        command "pressDownX5"
-        command "holdUp"
-        command "holdDown"
-        
         command "setAssociationGroup"
 
-        fingerprint mfr: "015D", prod: "B111", model: "251C", deviceJoinName: "Inovelli Dimmer"
-        fingerprint mfr: "051D", prod: "B111", model: "251C", deviceJoinName: "Inovelli Dimmer"
-        fingerprint mfr: "015D", prod: "1F00", model: "1F00", deviceJoinName: "Inovelli Dimmer"
-        fingerprint mfr: "0312", prod: "1F00", model: "1F00", deviceJoinName: "Inovelli Dimmer"
-        fingerprint mfr: "0312", prod: "1F02", model: "1F02", deviceJoinName: "Inovelli Dimmer" // Toggle version NZW31T
-        fingerprint deviceId: "0x1101", inClusters: "0x5E,0x26,0x27,0x70,0x5B,0x75,0x22,0x85,0x8E,0x59,0x55,0x86,0x72,0x5A,0x73,0x6C,0x7A"
-        
+        fingerprint mfr: "0312", prod: "0118", model: "1E1C", deviceJoinName: "Inovelli Dimmer"
+        fingerprint mfr: "015D", prod: "0118", model: "1E1C", deviceJoinName: "Inovelli Dimmer"
+        fingerprint mfr: "015D", prod: "1F01", model: "1F01", deviceJoinName: "Inovelli Dimmer"
+        fingerprint mfr: "0312", prod: "1F01", model: "1F01", deviceJoinName: "Inovelli Dimmer"
+        fingerprint deviceId: "0x1101", inClusters: "0x5E,0x26,0x27,0x70,0x75,0x22,0x85,0x8E,0x59,0x55,0x86,0x72,0x5A,0x73,0x6C,0x7A"
     }
 
     simulator {
@@ -87,7 +70,6 @@ metadata {
         input "enableDefaultLocalChild", "bool", title: "Default Local Level", description: "", required: false
         input "enableDefaultZWaveChild", "bool", title: "Default Z-Wave Level", description: "", required: false
         input "enableDisableLocalChild", "bool", title: "Disable Local Control", description: "", required: false
-        input description: "1 pushed - Up 1x click\n2 pushed - Up 2x click\n3 pushed - Up 3x click\n4 pushed - Up 4x click\n5 pushed - Up 5x click\n6 pushed - Up held\n\n1 held - Down 1x click\n2 held - Down 2x click\n3 held - Down 3x click\n4 held - Down 4x click\n5 held - Down 5x click\n6 held - Down held", title: "Button Mappings", displayDuringSetup: false, type: "paragraph", element: "paragraph"
         input description: "Use the \"Z-Wave Association Tool\" SmartApp to set device associations.\n(Firmware 1.02+)\n\nGroup 2: Sends on/off commands to associated devices when switch is pressed (BASIC_SET).\n\nGroup 3: Sends dim/brighten commands to associated devices when switch is pressed (SWITCH_MULTILEVEL_SET).", title: "Associations", displayDuringSetup: false, type: "paragraph", element: "paragraph"
         input "group3Setting", "enum", title: "Association Group 3 Behavior\n\nChange how devices respond when associated in group 3", description: "Tap to set", required: false, options:[[1: "Keep in Sync"], [0: "Dim up/down"]], defaultValue: 0
         input description: "When should the switch send commands to associated devices?", title: "Association Behavior", displayDuringSetup: false, type: "paragraph", element: "paragraph"
@@ -109,7 +91,7 @@ metadata {
                 attributeState "level", action:"switch level.setLevel"
             }
             tileAttribute("device.lastEvent", key: "SECONDARY_CONTROL") {
-                attributeState("default", label:'${currentValue}',icon: "st.unknown.zwave.remote-controller")
+                attributeState("default", label:'${currentValue}')
             }
         }
         
@@ -117,116 +99,14 @@ metadata {
             state "default", label: "", action: "refresh.refresh", icon: "st.secondary.refresh"
         }
         
-        standardTile("pressUpX2", "device.button", width: 2, height: 1, decoration: "flat") {
-            state "default", label: "Tap ▲▲", backgroundColor: "#ffffff", action: "pressUpX2"
-        }
-        
-        standardTile("pressUpX3", "device.button", width: 2, height: 1, decoration: "flat") {
-            state "default", label: "Tap ▲▲▲", backgroundColor: "#ffffff", action: "pressUpX3"
-        }
-        
-        standardTile("pressDownX2", "device.button", width: 2, height: 1, decoration: "flat") {
-            state "default", label: "Tap ▼▼", backgroundColor: "#ffffff", action: "pressDownX2"
-        }
-        
-        standardTile("pressDownX3", "device.button", width: 2, height: 1, decoration: "flat") {
-            state "default", label: "Tap ▼▼▼", backgroundColor: "#ffffff", action: "pressDownX3"
-        }
-        
-        valueTile("level", "device.level", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-            state "default", label: '${currentValue}%', icon: ""
-        }
-        
-        standardTile("pressUpX4", "device.button", width: 2, height: 1, decoration: "flat") {
-            state "default", label: "Tap ▲▲▲▲", backgroundColor: "#ffffff", action: "pressUpX4"
-        }
-        
-        standardTile("pressUpX5", "device.button", width: 2, height: 1, decoration: "flat") {
-            state "default", label: "Tap ▲▲▲▲▲", backgroundColor: "#ffffff", action: "pressUpX5"
-        }
-        
-        standardTile("pressDownX4", "device.button", width: 2, height: 1, decoration: "flat") {
-            state "default", label: "Tap ▼▼▼▼", backgroundColor: "#ffffff", action: "pressDownX4"
-        }
-        
-        standardTile("pressDownX5", "device.button", width: 2, height: 1, decoration: "flat") {
-            state "default", label: "Tap ▼▼▼▼▼", backgroundColor: "#ffffff", action: "pressDownX5"
-        }
-        
         valueTile("lastActivity", "device.lastActivity", inactiveLabel: false, decoration: "flat", width: 4, height: 1) {
             state "default", label: 'Last Activity: ${currentValue}',icon: "st.Health & Wellness.health9"
         }
         
-        valueTile("status", "device.status", inactiveLabel: false, decoration: "flat", width: 2, height: 1) {
-            state "default", label: '${currentValue}', icon: ""
-        }
-        
-        valueTile("info", "device.info", inactiveLabel: false, decoration: "flat", width: 3, height: 1) {
-            state "default", label: 'Tap on the buttons above to test scenes (ie: Tap ▲ 1x, ▲▲ 2x, etc depending on the button)'
-        }
-        
-        valueTile("icon", "device.icon", inactiveLabel: false, decoration: "flat", width: 3, height: 1) {
+        valueTile("icon", "device.icon", inactiveLabel: false, decoration: "flat", width: 4, height: 1) {
             state "default", label: '', icon: "https://inovelli.com/wp-content/uploads/Device-Handler/Inovelli-Device-Handler-Logo.png"
         }
     }
-}
-
-private channelNumber(String dni) {
-    dni.split("-ep")[-1] as Integer
-}
-
-private sendAlert(data) {
-    sendEvent(
-        descriptionText: data.message,
-        eventType: "ALERT",
-        name: "failedOperation",
-        value: "failed",
-        displayed: true,
-    )
-}
-
-void childSetLevel(String dni, value) {
-    def valueaux = value as Integer
-    def level = Math.max(Math.min(valueaux, 99), 0)    
-    def cmds = []
-    switch (channelNumber(dni)) {
-        case 8:
-            cmds << new physicalgraph.device.HubAction(command(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: channelNumber(dni), size: 1) ))
-            cmds << new physicalgraph.device.HubAction(command(zwave.configurationV1.configurationGet(parameterNumber: channelNumber(dni) )))
-        break
-        case 9:
-            cmds << new physicalgraph.device.HubAction(command(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: channelNumber(dni), size: 1) ))
-            cmds << new physicalgraph.device.HubAction(command(zwave.configurationV1.configurationGet(parameterNumber: channelNumber(dni) )))
-        break
-        case 101:
-            cmds << new physicalgraph.device.HubAction(command(zwave.protectionV2.protectionSet(localProtectionState : level > 0 ? 2 : 0, rfProtectionState: 0) ))
-            cmds << new physicalgraph.device.HubAction(command(zwave.protectionV2.protectionGet() ))
-        break
-    }
-	sendHubCommand(cmds, 1000)
-}
-
-void childOn(String dni) {
-    log.debug "childOn($dni)"
-    childSetLevel(dni, 99)
-}
-
-void childOff(String dni) {
-    log.debug "childOff($dni)"
-    childSetLevel(dni, 0)
-}
-
-void childRefresh(String dni) {
-    log.debug "childRefresh($dni)"
-}
-
-def childExists(ep) {
-    def children = childDevices
-    def childDevice = children.find{it.deviceNetworkId.endsWith(ep)}
-    if (childDevice) 
-        return true
-    else
-        return false
 }
 
 def installed() {
@@ -253,8 +133,6 @@ def updated() {
 
 def initialize() {
     sendEvent(name: "checkInterval", value: 3 * 60 * 60 + 2 * 60, displayed: false, data: [protocol: "zwave", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
-    sendEvent(name: "numberOfButtons", value: 6, displayed: true)
-    
     if (enableDefaultLocalChild && !childExists("ep8")) {
     try {
         addChildDevice("Switch Level Child Device", "${device.deviceNetworkId}-ep8", null,
@@ -369,46 +247,6 @@ def initialize() {
     return cmds
 }
 
-def zwaveEvent(physicalgraph.zwave.commands.configurationv1.ConfigurationReport cmd) {
-    log.debug "${device.displayName} parameter '${cmd.parameterNumber}' with a byte size of '${cmd.size}' is set to '${cmd2Integer(cmd.configurationValue)}'"
-    def integerValue = cmd2Integer(cmd.configurationValue)
-    switch (cmd.parameterNumber) {
-        case 8:
-            def children = childDevices
-            def childDevice = children.find{it.deviceNetworkId.endsWith("ep8")}
-            if (childDevice) {
-            childDevice.sendEvent(name: "switch", value: integerValue > 0 ? "on" : "off")
-            childDevice.sendEvent(name: "level", value: integerValue)            
-            }
-        break
-        case 9:
-            def children = childDevices
-            def childDevice = children.find{it.deviceNetworkId.endsWith("ep9")}
-            if (childDevice) {
-            childDevice.sendEvent(name: "switch", value: integerValue > 0 ? "on" : "off")
-            childDevice.sendEvent(name: "level", value: integerValue)
-            }
-        break
-    }
-}
-
-def cmd2Integer(array) {
-    switch(array.size()) {
-        case 1:
-            array[0]
-            break
-        case 2:
-            ((array[0] & 0xFF) << 8) | (array[1] & 0xFF)
-            break
-        case 3:
-            ((array[0] & 0xFF) << 16) | ((array[1] & 0xFF) << 8) | (array[2] & 0xFF)
-            break
-        case 4:
-            ((array[0] & 0xFF) << 24) | ((array[1] & 0xFF) << 16) | ((array[2] & 0xFF) << 8) | (array[3] & 0xFF)
-            break
-    }
-}
-
 def parse(description) {
     def result = null
     if (description.startsWith("Err 106")) {
@@ -467,31 +305,6 @@ def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulat
     }
 }
 
-def zwaveEvent(physicalgraph.zwave.commands.centralscenev1.CentralSceneNotification cmd) {
-    switch (cmd.keyAttributes) {
-       case 0:
-       createEvent(buttonEvent(cmd.keyAttributes + 1, (cmd.sceneNumber == 2? "pushed" : "held"), "physical"))
-       break
-       case 1:
-       createEvent(buttonEvent(6, (cmd.sceneNumber == 2? "pushed" : "held"), "physical"))
-       break
-       case 2:
-       null
-       break
-       default:
-       createEvent(buttonEvent(cmd.keyAttributes - 1, (cmd.sceneNumber == 2? "pushed" : "held"), "physical"))
-       break
-    }
-}
-
-def buttonEvent(button, value, type = "digital") {
-    if(button != 6)
-        sendEvent(name:"lastEvent", value: "${value != 'pushed'?' Tap '.padRight(button+5, '▼'):' Tap '.padRight(button+5, '▲')}", displayed:false)
-    else
-        sendEvent(name:"lastEvent", value: "${value != 'pushed'?' Hold ▼':' Hold ▲'}", displayed:false)
-    [name: "button", value: value, data: [buttonNumber: button], descriptionText: "$device.displayName button $button was $value", isStateChange: true, type: type]
-}
-
 def zwaveEvent(physicalgraph.zwave.Command cmd) {
     log.debug "Unhandled: $cmd"
     null
@@ -500,29 +313,26 @@ def zwaveEvent(physicalgraph.zwave.Command cmd) {
 def on() {
     commands([
         zwave.basicV1.basicSet(value: 0xFF),
-        zwave.switchMultilevelV1.switchMultilevelGet()
+        zwave.switchBinaryV1.switchBinaryGet()
     ])
 }
 
 def off() {
     commands([
         zwave.basicV1.basicSet(value: 0x00),
-        zwave.switchMultilevelV1.switchMultilevelGet()
+        zwave.switchBinaryV1.switchBinaryGet()
     ])
 }
 
 def setLevel(value) {
     commands([
         zwave.basicV1.basicSet(value: value < 100 ? value : 99),
-        zwave.switchMultilevelV1.switchMultilevelGet()
     ])
 }
 
 def setLevel(value, duration) {
     def dimmingDuration = duration < 128 ? duration : 128 + Math.round(duration / 60)
-        commands([
-            zwave.switchMultilevelV2.switchMultilevelSet(value: value < 100 ? value : 99, dimmingDuration: dimmingDuration),
-            zwave.switchMultilevelV1.switchMultilevelGet().format()
+        commands([zwave.switchMultilevelV2.switchMultilevelSet(value: value < 100 ? value : 99, dimmingDuration: dimmingDuration),
     ])
 }
 
@@ -553,54 +363,6 @@ private command(physicalgraph.zwave.Command cmd) {
 
 private commands(commands, delay=500) {
     delayBetween(commands.collect{ command(it) }, delay)
-}
-
-def pressUpX1() {
-    sendEvent(buttonEvent(1, "pushed"))
-}
-
-def pressDownX1() {
-    sendEvent(buttonEvent(1, "held"))
-}
-
-def pressUpX2() {
-    sendEvent(buttonEvent(2, "pushed"))
-}
-
-def pressDownX2() {
-    sendEvent(buttonEvent(2, "held"))
-}
-
-def pressUpX3() {
-    sendEvent(buttonEvent(3, "pushed"))
-}
-
-def pressDownX3() {
-    sendEvent(buttonEvent(3, "held"))
-}
-
-def pressUpX4() {
-    sendEvent(buttonEvent(4, "pushed"))
-}
-
-def pressDownX4() {
-    sendEvent(buttonEvent(4, "held"))
-}
-
-def pressUpX5() {
-    sendEvent(buttonEvent(5, "pushed"))
-}
-
-def pressDownX5() {
-    sendEvent(buttonEvent(5, "held"))
-}
-
-def holdUp() {
-    sendEvent(buttonEvent(6, "pushed"))
-}
-
-def holdDown() {
-    sendEvent(buttonEvent(6, "held"))
 }
 
 def setDefaultAssociations() {

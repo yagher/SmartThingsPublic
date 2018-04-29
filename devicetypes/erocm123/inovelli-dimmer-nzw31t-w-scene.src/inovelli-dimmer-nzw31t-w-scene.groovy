@@ -1,7 +1,7 @@
 /**
- *  Inovelli Dimmer Smart Plug NZW39 w/Scene
+ *  Inovelli Dimmer NZW31T w/Scene
  *  Author: Eric Maycock (erocm123)
- *  Date: 2017-10-18
+ *  Date: 2017-12-28
  *
  *  Copyright 2017 Eric Maycock
  *
@@ -17,33 +17,46 @@
  */
  
 metadata {
-    definition (name: "Inovelli Dimmer Smart Plug NZW39 w/Scene", namespace: "erocm123", author: "Eric Maycock") {
+    definition (name: "Inovelli Dimmer NZW31T w/Scene", namespace: "erocm123", author: "Eric Maycock") {
         capability "Switch"
         capability "Refresh"
         capability "Polling"
         capability "Actuator"
         capability "Sensor"
-        capability "Health Check"
+        //capability "Health Check"
         capability "Button"
+        capability "Holdable Button"
+        capability "Indicator"
         capability "Switch Level"
         
         attribute "lastActivity", "String"
         attribute "lastEvent", "String"
-
+        
+        command "pressUpX1"
+        command "pressDownX1"
         command "pressUpX2"
+        command "pressDownX2"
+        command "pressUpX3"
+        command "pressDownX3"
+        command "pressUpX4"
+        command "pressDownX4"
+        command "pressUpX5"
+        command "pressDownX5"
+        command "holdUp"
+        command "holdDown"
 
-        fingerprint mfr: "015D", prod: "2700", model: "2700", deviceJoinName: "Inovelli Dimmer Smart Plug"
-        fingerprint mfr: "0312", prod: "2700", model: "2700", deviceJoinName: "Inovelli Dimmer Smart Plug"
-        fingerprint deviceId: "0x1101", inClusters: "0x5E,0x26,0x27,0x70,0x5B,0x85,0x8E,0x59,0x55,0x86,0x72,0x5A,0x73,0x6C,0x7A"
+        fingerprint mfr: "0312", prod: "1F02", model: "1F02", deviceJoinName: "Inovelli Dimmer"
     }
 
     simulator {
     }
     
     preferences {
+        input "minimumLevel", "number", title: "Minimum Level\n\nMinimum dimming level for attached light\nRange: 1 to 99", description: "Tap to set", required: false, range: "1..99"
+        input "dimmingStep", "number", title: "Dimming Step Size\n\nPercentage of step when switch is dimming up or down\nRange: 1 to 99", description: "Tap to set", required: false, range: "1..99"
         input "autoOff", "number", title: "Auto Off\n\nAutomatically turn switch off after this number of seconds\nRange: 0 to 32767", description: "Tap to set", required: false, range: "0..32767"
-        input "ledIndicator", "enum", title: "LED Indicator\n\nTurn LED indicator on when light is:\n", description: "Tap to set", required: false, options:[[1: "On"], [0: "Off"], [2: "Disable"]], defaultValue: 1     
-        input description: "1 pushed - Button 2x click", title: "Button Mappings", displayDuringSetup: false, type: "paragraph", element: "paragraph"
+        input "invert", "enum", title: "Invert Switch", description: "Tap to set", required: false, options:[0: "No", 1: "Yes"], defaultValue: 0
+        input description: "1 pushed - Up 1x click\n2 pushed - Up 2x click\n3 pushed - Up 3x click\n4 pushed - Up 4x click\n5 pushed - Up 5x click\n6 pushed - Up held\n\n1 held - Down 1x click\n2 held - Down 2x click\n3 held - Down 3x click\n4 held - Down 4x click\n5 held - Down 5x click\n6 held - Down held", title: "Button Mappings", displayDuringSetup: false, type: "paragraph", element: "paragraph"
     }
     
     tiles {
@@ -66,16 +79,52 @@ metadata {
             state "default", label: "", action: "refresh.refresh", icon: "st.secondary.refresh"
         }
         
-        standardTile("pressUpX2", "device.button", width: 4, height: 1, decoration: "flat") {
+        standardTile("pressUpX2", "device.button", width: 2, height: 1, decoration: "flat") {
             state "default", label: "Tap ▲▲", backgroundColor: "#ffffff", action: "pressUpX2"
+        }
+        
+        standardTile("pressUpX3", "device.button", width: 2, height: 1, decoration: "flat") {
+            state "default", label: "Tap ▲▲▲", backgroundColor: "#ffffff", action: "pressUpX3"
+        }
+        
+        standardTile("pressDownX2", "device.button", width: 2, height: 1, decoration: "flat") {
+            state "default", label: "Tap ▼▼", backgroundColor: "#ffffff", action: "pressDownX2"
+        }
+        
+        standardTile("pressDownX3", "device.button", width: 2, height: 1, decoration: "flat") {
+            state "default", label: "Tap ▼▼▼", backgroundColor: "#ffffff", action: "pressDownX3"
+        }
+        
+        valueTile("level", "device.level", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+            state "default", label: '${currentValue}%', icon: ""
+        }
+        
+        standardTile("pressUpX4", "device.button", width: 2, height: 1, decoration: "flat") {
+            state "default", label: "Tap ▲▲▲▲", backgroundColor: "#ffffff", action: "pressUpX4"
+        }
+        
+        standardTile("pressUpX5", "device.button", width: 2, height: 1, decoration: "flat") {
+            state "default", label: "Tap ▲▲▲▲▲", backgroundColor: "#ffffff", action: "pressUpX5"
+        }
+        
+        standardTile("pressDownX4", "device.button", width: 2, height: 1, decoration: "flat") {
+            state "default", label: "Tap ▼▼▼▼", backgroundColor: "#ffffff", action: "pressDownX4"
+        }
+        
+        standardTile("pressDownX5", "device.button", width: 2, height: 1, decoration: "flat") {
+            state "default", label: "Tap ▼▼▼▼▼", backgroundColor: "#ffffff", action: "pressDownX5"
         }
         
         valueTile("lastActivity", "device.lastActivity", inactiveLabel: false, decoration: "flat", width: 4, height: 1) {
             state "default", label: 'Last Activity: ${currentValue}',icon: "st.Health & Wellness.health9"
         }
         
+        valueTile("blank", "device.blank", inactiveLabel: false, decoration: "flat", width: 2, height: 1) {
+            state "default", label: '', icon: ""
+        }
+        
         valueTile("info", "device.info", inactiveLabel: false, decoration: "flat", width: 3, height: 1) {
-            state "default", label: 'Tap on the ▲▲ button above to test your scene'
+            state "default", label: 'Tap on the buttons above to test scenes (ie: Tap ▲ 1x, ▲▲ 2x, etc depending on the button)'
         }
         
         valueTile("icon", "device.icon", inactiveLabel: false, decoration: "flat", width: 3, height: 1) {
@@ -94,12 +143,14 @@ def updated() {
     def cmds = []
     cmds << zwave.associationV2.associationSet(groupingIdentifier: 1, nodeId: zwaveHubNodeId)
     cmds << zwave.associationV2.associationGet(groupingIdentifier: 1)
-    cmds << zwave.configurationV1.configurationSet(configurationValue: [ledIndicator? ledIndicator.toInteger() : 1], parameterNumber: 1, size: 1)
+    cmds << zwave.configurationV1.configurationSet(configurationValue: [dimmingStep? dimmingStep.toInteger() : 1], parameterNumber: 1, size: 1)
     cmds << zwave.configurationV1.configurationGet(parameterNumber: 1)
-    cmds << zwave.configurationV1.configurationSet(scaledConfigurationValue: autoOff? autoOff.toInteger() : 0, parameterNumber: 2, size: 2)
+    cmds << zwave.configurationV1.configurationSet(configurationValue: [minimumLevel? minimumLevel.toInteger() : 1], parameterNumber: 2, size: 1)
     cmds << zwave.configurationV1.configurationGet(parameterNumber: 2)
-    cmds << zwave.configurationV1.configurationGet(parameterNumber: 3)
+    cmds << zwave.configurationV1.configurationSet(configurationValue: [invert? invert.toInteger() : 0], parameterNumber: 4, size: 1)
     cmds << zwave.configurationV1.configurationGet(parameterNumber: 4)
+    cmds << zwave.configurationV1.configurationSet(scaledConfigurationValue: autoOff? autoOff.toInteger() : 0, parameterNumber: 5, size: 2)
+    cmds << zwave.configurationV1.configurationGet(parameterNumber: 5)
     response(commands(cmds))
 }
 
@@ -164,11 +215,27 @@ def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulat
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.centralscenev1.CentralSceneNotification cmd) {
-    createEvent(buttonEvent(cmd.sceneNumber, (cmd.sceneNumber == 2? "held" : "pushed"), "physical"))
+    switch (cmd.keyAttributes) {
+       case 0:
+       createEvent(buttonEvent(cmd.keyAttributes + 1, (cmd.sceneNumber == 2? "pushed" : "held"), "physical"))
+       break
+       case 1:
+       createEvent(buttonEvent(6, (cmd.sceneNumber == 2? "pushed" : "held"), "physical"))
+       break
+       case 2:
+       null
+       break
+       default:
+       createEvent(buttonEvent(cmd.keyAttributes - 1, (cmd.sceneNumber == 2? "pushed" : "held"), "physical"))
+       break
+    }
 }
 
 def buttonEvent(button, value, type = "digital") {
-    sendEvent(name:"lastEvent", value: "${value != 'pushed'?' Tap '.padRight(button+1+5, '▼'):' Tap '.padRight(button+1+5, '▲')}", displayed:false)
+    if(button != 6)
+        sendEvent(name:"lastEvent", value: "${value != 'pushed'?' Tap '.padRight(button+5, '▼'):' Tap '.padRight(button+5, '▲')}", displayed:false)
+    else
+        sendEvent(name:"lastEvent", value: "${value != 'pushed'?' Hold ▼':' Hold ▲'}", displayed:false)
     [name: "button", value: value, data: [buttonNumber: button], descriptionText: "$device.displayName button $button was $value", isStateChange: true, type: type]
 }
 
@@ -202,7 +269,7 @@ def setLevel(value, duration) {
     def dimmingDuration = duration < 128 ? duration : 128 + Math.round(duration / 60)
         commands([
             zwave.switchMultilevelV2.switchMultilevelSet(value: value < 100 ? value : 99, dimmingDuration: dimmingDuration),
-            zwave.switchMultilevelV1.switchMultilevelGet()
+            zwave.switchMultilevelV1.switchMultilevelGet().format()
     ])
 }
 
@@ -235,6 +302,50 @@ private commands(commands, delay=500) {
     delayBetween(commands.collect{ command(it) }, delay)
 }
 
+def pressUpX1() {
+    sendEvent(buttonEvent(1, "pushed"))
+}
+
+def pressDownX1() {
+    sendEvent(buttonEvent(1, "held"))
+}
+
 def pressUpX2() {
     sendEvent(buttonEvent(2, "pushed"))
+}
+
+def pressDownX2() {
+    sendEvent(buttonEvent(2, "held"))
+}
+
+def pressUpX3() {
+    sendEvent(buttonEvent(3, "pushed"))
+}
+
+def pressDownX3() {
+    sendEvent(buttonEvent(3, "held"))
+}
+
+def pressUpX4() {
+    sendEvent(buttonEvent(4, "pushed"))
+}
+
+def pressDownX4() {
+    sendEvent(buttonEvent(4, "held"))
+}
+
+def pressUpX5() {
+    sendEvent(buttonEvent(5, "pushed"))
+}
+
+def pressDownX5() {
+    sendEvent(buttonEvent(5, "held"))
+}
+
+def holdUp() {
+    sendEvent(buttonEvent(6, "pushed"))
+}
+
+def holdDown() {
+    sendEvent(buttonEvent(6, "held"))
 }

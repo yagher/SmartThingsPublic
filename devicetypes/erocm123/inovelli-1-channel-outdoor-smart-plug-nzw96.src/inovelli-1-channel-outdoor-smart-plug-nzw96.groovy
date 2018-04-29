@@ -1,9 +1,9 @@
- /**
- *  Inovelli 1-Channel Smart Plug NZW36 w/Scene
+/**
+ *  Inovelli 1-Channel Outdoor Smart Plug NZW96
  *  Author: Eric Maycock (erocm123)
- *  Date: 2017-09-19
+ *  Date: 2018-02-15
  *
- *  Copyright 2017 Eric Maycock
+ *  Copyright 2018 Eric Maycock
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -17,24 +17,19 @@
  */
  
 metadata {
-    definition (name: "Inovelli 1-Channel Smart Plug NZW36 w/Scene", namespace: "erocm123", author: "Eric Maycock") {
+    definition (name: "Inovelli 1-Channel Outdoor Smart Plug NZW96", namespace: "erocm123", author: "Eric Maycock") {
         capability "Switch"
         capability "Refresh"
         capability "Polling"
         capability "Actuator"
         capability "Sensor"
         capability "Health Check"
-        capability "Button"
         
         attribute "lastActivity", "String"
-        attribute "lastEvent", "String"
-        
-        command "pressUpX2"
 
-        fingerprint mfr: "015D", prod: "0221", model: "241C", deviceJoinName: "Inovelli Smart Plug"
-        fingerprint mfr: "015D", prod: "2400", model: "2400", deviceJoinName: "Inovelli Smart Plug"
-        fingerprint mfr: "0312", prod: "2400", model: "2400", deviceJoinName: "Inovelli Smart Plug"
-        
+        fingerprint mfr: "015D", prod: "6000", model: "6000", deviceJoinName: "Inovelli Outdoor Smart Plug"
+        fingerprint mfr: "0312", prod: "6000", model: "6000", deviceJoinName: "Inovelli Outdoor Smart Plug"
+        fingerprint deviceId: "0x1001", inClusters: "0x5E,0x86,0x72,0x5A,0x85,0x59,0x73,0x25,0x27,0x70,0x71,0x8E,0x55,0x6C,0x7A"
     }
 
     simulator {
@@ -43,7 +38,6 @@ metadata {
     preferences {
         input "autoOff", "number", title: "Auto Off\n\nAutomatically turn switch off after this number of seconds\nRange: 0 to 32767", description: "Tap to set", required: false, range: "0..32767"
         input "ledIndicator", "enum", title: "LED Indicator\n\nTurn LED indicator on when switch is:\n", description: "Tap to set", required: false, options:[[0: "On"], [1: "Off"], [2: "Disable"]], defaultValue: 0
-        input description: "1 pushed - Button 2x click", title: "Button Mappings", displayDuringSetup: false, type: "paragraph", element: "paragraph"
     }
     
     tiles {
@@ -54,28 +48,16 @@ metadata {
                 attributeState "turningOff", label: '${name}', action: "switch.on", icon: "st.switches.switch.off", backgroundColor: "#ffffff", nextState: "turningOn"
                 attributeState "turningOn", label: '${name}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#00a0dc", nextState: "turningOff"
             }
-            tileAttribute("device.lastEvent", key: "SECONDARY_CONTROL") {
-                attributeState("default", label:'${currentValue}',icon: "st.unknown.zwave.remote-controller")
-            }
         }
         
         standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
             state "default", label: "", action: "refresh.refresh", icon: "st.secondary.refresh"
         }
         
-        standardTile("pressUpX2", "device.button", width: 4, height: 1, decoration: "flat") {
-            state "default", label: "Tap ▲▲", backgroundColor: "#ffffff", action: "pressUpX2"
-        }
-        
         valueTile("lastActivity", "device.lastActivity", inactiveLabel: false, decoration: "flat", width: 4, height: 1) {
             state "default", label: 'Last Activity: ${currentValue}',icon: "st.Health & Wellness.health9"
         }
-        
-        valueTile("info", "device.info", inactiveLabel: false, decoration: "flat", width: 3, height: 1) {
-            state "default", label: 'Tap on the ▲▲ button above to test your scene'
-        }
-        
-        valueTile("icon", "device.icon", inactiveLabel: false, decoration: "flat", width: 3, height: 1) {
+        valueTile("icon", "device.icon", inactiveLabel: false, decoration: "flat", width: 4, height: 1) {
             state "default", label: '', icon: "https://inovelli.com/wp-content/uploads/Device-Handler/Inovelli-Device-Handler-Logo.png"
         }
     }
@@ -141,15 +123,6 @@ def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulat
     }
 }
 
-def zwaveEvent(physicalgraph.zwave.commands.centralscenev1.CentralSceneNotification cmd) {
-    createEvent(buttonEvent(cmd.sceneNumber, (cmd.sceneNumber == 2? "held" : "pushed"), "physical"))
-}
-
-def buttonEvent(button, value, type = "digital") {
-    sendEvent(name:"lastEvent", value: "${value != 'pushed'?' Tap '.padRight(button+1+5, '▼'):' Tap '.padRight(button+1+5, '▲')}", displayed:false)
-    [name: "button", value: value, data: [buttonNumber: button], descriptionText: "$device.displayName button $button was $value", isStateChange: true, type: type]
-}
-
 def zwaveEvent(physicalgraph.zwave.Command cmd) {
     log.debug "Unhandled: $cmd"
     null
@@ -191,8 +164,4 @@ private command(physicalgraph.zwave.Command cmd) {
 
 private commands(commands, delay=500) {
     delayBetween(commands.collect{ command(it) }, delay)
-}
-
-def pressUpX2() {
-    sendEvent(buttonEvent(1, "pushed"))
 }
